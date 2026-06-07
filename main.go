@@ -12,14 +12,15 @@ import (
 )
 
 type TokenRequest struct {
-	Room     string `json:"room"`
 	Identity string `json:"identity"`
-	Name     string `json:"name"`
 }
 
 type TokenResponse struct {
-	Token string `json:"token"`
-	URL   string `json:"url"`
+	Token    string `json:"token"`
+	URL      string `json:"url"`
+	Room     string `json:"room"`
+	Identity string `json:"identity"`
+	Name     string `json:"name"`
 }
 
 func main() {
@@ -58,14 +59,31 @@ func main() {
 			return
 		}
 
-		if req.Room == "" || req.Identity == "" {
-			http.Error(w, "room and identity are required", http.StatusBadRequest)
+		// validate identity
+		if req.Identity == "" {
+			http.Error(w, "identity is required", http.StatusBadRequest)
+			return
+		}
+
+		// allowed identities and display names
+		const fixedRoom = "experiment-001"
+		allowed := map[string]string{
+			"subject-01": "同時参加者",
+			"sakura-a":   "サクラA",
+			"sakura-b":   "サクラB",
+			"sakura-c":   "サクラC",
+			"sakura-d":   "サクラD",
+		}
+
+		displayName, ok := allowed[req.Identity]
+		if !ok {
+			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}
 
 		at := lkauth.NewAccessToken(apiKey, apiSecret)
 		at.SetIdentity(req.Identity)
-		at.SetName(req.Name)
+		at.SetName(displayName)
 		at.SetValidFor(2 * time.Hour)
 
 		canPublish := true
@@ -73,7 +91,7 @@ func main() {
 
 		grant := &lkauth.VideoGrant{
 			RoomJoin:     true,
-			Room:         req.Room,
+			Room:         fixedRoom,
 			CanPublish:   &canPublish,
 			CanSubscribe: &canSubscribe,
 		}
@@ -87,8 +105,11 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(TokenResponse{
-			Token: token,
-			URL:   livekitURL,
+			Token:    token,
+			URL:      livekitURL,
+			Room:     fixedRoom,
+			Identity: req.Identity,
+			Name:     displayName,
 		})
 	})
 
