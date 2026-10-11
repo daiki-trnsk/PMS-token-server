@@ -70,13 +70,14 @@ func main() {
 		}
 
 		allowedRooms := map[string]map[string]bool{
-			"participant-a":    {"room-a": true},
-			"participant-b":    {"room-a": true},
-			"participant-c":    {"room-b": true},
-			"participant-d":    {"room-b": true},
-			"subject-01":       {"room-a": true, "room-b": true},
-			"pms-agent-room-a": {"room-a": true},
-			"pms-agent-room-b": {"room-b": true},
+			"participant-a":      {"room-a": true},
+			"participant-b":      {"room-a": true},
+			"participant-c":      {"room-b": true},
+			"participant-d":      {"room-b": true},
+			"subject-01":         {"room-a": true, "room-b": true},
+			"subject-control-01": {"room-a": true, "room-b": true},
+			"pms-agent-room-a":   {"room-a": true},
+			"pms-agent-room-b":   {"room-b": true},
 		}
 
 		allowedForIdentity, ok := allowedRooms[req.Identity]
